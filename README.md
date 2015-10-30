@@ -4,11 +4,11 @@ Bitwig controller script for Korg nanoPAD2.
 To install copy the "Factotumo" folder and contents to Bitwig's contoller
 scripts directory.  On OS X this is
 
-    *~/Documents/Bitwig Studio/Controller Scripts*
+    ~/Documents/Bitwig Studio/Controller Scripts
 
 More on installation at:
 
-    *(https://www.bitwig.com/en/community/control_scripts/installation_guide)*
+    https://www.bitwig.com/en/community/control_scripts/installation_guide
 
 This script lets you use the nanoPAD2 to launch clips.  It supports 8 tracks
 and 8 scenes per track.
