@@ -1,13 +1,23 @@
+/*
+
+This script is for Korg's nanoPAD2 controller.  It enables you to
+use the nanoPAD2 to start/stop clips from the clip launcher in
+Bitwig Studio.
+
+More at README.
+
+*/
+
 loadAPI(1);
 
 host.defineController(
-    "Factotumo", "nanoPAD2 - Factotumo",
+    "Factotumo", "nanoPAD2 Clip Launcher",
     "1.0", "ae945665-8dd6-4615-8294-fc06e4a02c0b"
 );
 
 host.defineMidiPorts(1,0);
 
-// set to 1 for console logging
+// set to 1 to enable console logging
 var enableDebugLogging = 1;
 
 var mainTrackBank;
@@ -65,8 +75,8 @@ function init() {
 function onMidi(status, data1, data2) {
     log("onMidi(status=" + status + ", data1=" + data1 + ", data2=" + data2 + ")");
 
-    // we use note on messages to control clip launching
-    if (status == 144) {
+    // we use note on messages from the nanoPAD2 to control clip launching
+    if (status == 0x90) {
         var noteMapping = noteToClipLauncherGridMapping[data1];
         log("handling note on for note number " + data1 + " grid location: row=" + noteMapping.r + ", col=" + noteMapping.c);
         if (trackPlayStates[noteMapping.r] == -1) {
@@ -84,7 +94,6 @@ function onMidi(status, data1, data2) {
             }
             
         }
-        
     }
 }
 
