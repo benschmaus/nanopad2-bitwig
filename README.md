@@ -7,7 +7,7 @@ and 8 scenes per track.
 The top row of the nanoPAD2 corresponds to track 1 in Bitwig, with each
 pad in the row corresponding to a scene in Bitwig's clip launcher.
 
-Use the scene buttons on the nanoPAD2 to navigate from track 1 and 2 (scene 1
+Use the scene button on the nanoPAD2 to navigate from track 1 and 2 (scene 1
 on the nano) to tracks 3 and 4 (scene 2) and so on.
 
 To install, copy the "Factotumo" folder and contents to Bitwig's contoller
