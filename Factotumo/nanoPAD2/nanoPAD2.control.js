@@ -50,7 +50,8 @@ function init() {
         trackPlayStates[i] = -1;
         var track = mainTrackBank.getChannel(i);
         var clipLauncherSlots = track.getClipLauncherSlots();
-    
+        clipLauncherSlots.setIndication(true);
+        
         clipLauncherSlots.addPlaybackStateObserver(
             getTrackSlotObserverFunc(
                 i,
