@@ -91,6 +91,8 @@ NanoPAD2.prototype.initGrid = function() {
     var startNote = 37;
     var increment = 16;
     
+        // we do 2 rows at a time to mirror the nanoPAD2 layout of 2 rows
+    // of 8 pads spread over 4 scenes for 8 rows * 8 pads total
     var i = 0;
     while (i < this.config.NUM_TRACKS) {
 

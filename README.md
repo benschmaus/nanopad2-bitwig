@@ -8,8 +8,8 @@ Two modes are supported: clip mode and scene mode.  Clip mode is the default
 mode.  Tap in the upper left or right corners of the X/Y pad to enable scene
 mode or the lower left or right corners for clip mode.
 
-In clip mode, the top row of the nanoPAD2 corresponds to track 1 in Bitwig,
-with each pad in the row corresponding to a clip in Bitwig's clip launcher.
+In clip mode, the top row of the nanoPAD2 corresponds to track 1 in Bitwig.
+Each pad in the row corresponding to a clip in Bitwig's clip launcher.
 
 Use the scene button on the nanoPAD2 to navigate from track 1 and 2 (scene 1
 on the nano) to tracks 3 and 4 (scene 2) and so on.
