@@ -56,6 +56,9 @@ QUnit.test(
     assert.equal(nanoPAD2.isClipMode(), true, "no mode change for CC other than #2");
 
     // check playstate setting
+    assert.equal(nanoPAD2.trackPlayStates.length == nanoPAD2.config.NUM_TRACKS, true,
+        "track playstates has " + nanoPAD2.config.NUM_TRACKS + " tracks");
+
     nanoPAD2.playbackStateObserver(0, 0, 1, true);
     assert.equal(nanoPAD2.playstateForTrack(0) == 0, true, "track playstate set to play for row 1 clip 1");
 
@@ -66,6 +69,14 @@ QUnit.test(
     assert.equal(nanoPAD2.playstateForTrack(0) == -1, true, "track playstate unchanged for no queued event for row 1 clip 1");
 
     // check clip content setting
+    assert.equal(nanoPAD2.trackClipContents.length == nanoPAD2.config.NUM_TRACKS, true,
+        "track clips content has " + nanoPAD2.config.NUM_TRACKS + " tracks");
+    for (var i = 0; i < nanoPAD2.config.NUM_TRACKS; i++) {
+        assert.equal(nanoPAD2.trackClipContents[i].length == nanoPAD2.config.NUM_SCENES_PER_TRACK,
+        true,
+        "track clips content for track " + i  + " has " + nanoPAD2.config.NUM_SCENES_PER_TRACK + " clips");     
+    }
+
     assert.equal(false == nanoPAD2.trackClipHasContent(0, 2), true, "track clip content default is false");
     
     nanoPAD2.hasContentObserver(0, 2, true);

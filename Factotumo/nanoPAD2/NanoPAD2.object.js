@@ -47,7 +47,7 @@ NanoPAD2.prototype.playstateForTrack = function(trackIndex) {
     return this.trackPlayStates[trackIndex];
 }
 
-NanoPAD2.prototype.trackClipHasContent = function(row, column) {
+NanoPAD2.prototype.trackClipHasContent = function(row, column) {    
     return this.trackClipContents[row][column];
 }
 
@@ -69,9 +69,7 @@ NanoPAD2.prototype.hasContentObserver = function(rowIndex, slotIndex, hasClip) {
     this.trackClipContents[rowIndex][slotIndex] = hasClip;
 }
 
-NanoPAD2.prototype.initTrackPlayState = function(i) {
-    
-    this.trackPlayStates[i] = -1;
+NanoPAD2.prototype.addTrackObservers = function(i) {
     
     var track = this.mainTrackBank.getChannel(i);
     var clipLauncherSlots = track.getClipLauncherSlots();
@@ -96,8 +94,14 @@ NanoPAD2.prototype.initGrid = function() {
     var i = 0;
     while (i < this.config.NUM_TRACKS) {
 
-        this.initTrackPlayState(i);
+        this.addTrackObservers(i);
+        this.addTrackObservers(i+1);
+
+        this.trackPlayStates[i] = -1;
+        this.trackPlayStates[i+1] = -1;
+
         this.trackClipContents[i] = [];
+        this.trackClipContents[i+1] = [];
 
         if (i > 1) {
             startNote += increment;     
@@ -111,6 +115,7 @@ NanoPAD2.prototype.initGrid = function() {
         // now set the cols
         for (var j = 0; j < this.config.NUM_SCENES_PER_TRACK; j++) {
             this.trackClipContents[i][j] = false;
+            this.trackClipContents[i+1][j] = false;
 
             this.noteToClipLauncherGridMapping[colOdd] = { r: i, c: j };
             this.noteToClipLauncherGridMapping[colEven] = { r: i+1, c: j };
