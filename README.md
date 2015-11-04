@@ -9,16 +9,16 @@ mode.  Tap in the upper left or right corners of the X/Y pad to enable scene
 mode or the lower left or right corners for clip mode.
 
 In clip mode, the top row of the nanoPAD2 corresponds to track 1 in Bitwig.
-Each pad in the row corresponding to a clip in Bitwig's clip launcher.
+Each pad in the row corresponds to a clip in Bitwig's clip launcher.
 
-Use the scene button on the nanoPAD2 to navigate from track 1 and 2 (scene 1
-on the nano) to tracks 3 and 4 (scene 2) and so on.
+Use the scene button on the nanoPAD2 to control clips on track 1 and 2
+(scene 1 on the nano), tracks 3 and 4 (scene 2), and so on.
 
 In scene mode, the top row of scene 1 on the nanoPAD2 will start/stop all
 clips in a scene but otherwise this mode functions the same as clip mode.
 
-To install, copy the "Factotumo" folder and contents to Bitwig's contoller
-scripts directory.
+To install, copy the "Factotumo" folder to Bitwig's contoller scripts
+directory.
 
 On OS X this is *~/Documents/Bitwig Studio/Controller Scripts*.
 
