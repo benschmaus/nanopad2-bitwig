@@ -24,8 +24,6 @@ var enableDebugLogging = 1;
 
 var nanoPAD2;
 
-var config = new Config();
-
 /*
 
 TODO: for stop scene - add addHasContentObserver on each track's
@@ -49,6 +47,8 @@ function init() {
     // need them for note inputs
     //var noteInput = firstIn.createNoteInput("");
     //noteInput.setShouldConsumeEvents(false);  
+
+    var config = new Config();
 
     // we support 8 tracks with 8 scenes
     mainTrackBank = host.createMainTrackBank(config.NUM_TRACKS, 0, config.NUM_SCENES_PER_TRACK);
@@ -111,8 +111,13 @@ function handleStop(row, column) {
         if (row == 0) {
             log("in scene mode and row 0, stopping all clips in scene " + column);
             // in scene mode for a stop we need to stop playback on all channels
-            for (var i = 0; i < config.NUM_TRACKS; i++) {
-                mainTrackBank.getChannel(i).getClipLauncherSlots().stop();
+            for (var i = 0; i < nanoPAD2.config.NUM_TRACKS; i++) {
+                if (nanoPAD2.trackClipHasContent(i, column)) {
+                    log("clip " + column + " in track " + i + " has content so stopping");
+                    mainTrackBank.getChannel(i).getClipLauncherSlots().stop();
+                } else {
+                    log("clip " + column + " in track " + i + " doesn't have content so not stopping");
+                }
             }
         } else {
             mainTrackBank.getChannel(row).getClipLauncherSlots().stop();

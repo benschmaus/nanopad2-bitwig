@@ -7,6 +7,9 @@ var mockClipLauncherSlots = {
     setIndication: function(indication) { },
     addPlaybackStateObserver: function(func) {
 
+    },
+    addHasContentObserver: function(func) {
+
     }
 };
 
@@ -54,13 +57,18 @@ QUnit.test(
 
     // check playstate setting
     nanoPAD2.playbackStateObserver(0, 0, 1, true);
-    assert.equal(nanoPAD2.trackPlayStates[0] == 0, true, "track playstate set to play for row 1 clip 1");
+    assert.equal(nanoPAD2.playstateForTrack(0) == 0, true, "track playstate set to play for row 1 clip 1");
 
     nanoPAD2.playbackStateObserver(0, 0, 0, true);
-    assert.equal(nanoPAD2.trackPlayStates[0] == -1, true, "track playstate set to stop for row 1 clip 1");
+    assert.equal(nanoPAD2.playstateForTrack(0) == -1, true, "track playstate set to stop for row 1 clip 1");
 
     nanoPAD2.playbackStateObserver(0, 0, 0, false);
-    assert.equal(nanoPAD2.trackPlayStates[0] == -1, true, "track playstate unchanged for no queued event for row 1 clip 1");    
-}
+    assert.equal(nanoPAD2.playstateForTrack(0) == -1, true, "track playstate unchanged for no queued event for row 1 clip 1");
 
-);
+    // check clip content setting
+    assert.equal(false == nanoPAD2.trackClipHasContent(0, 2), true, "track clip content default is false");
+    
+    nanoPAD2.hasContentObserver(0, 2, true);
+    assert.equal(true == nanoPAD2.trackClipHasContent(0, 2), true, "track clip content updated to true");
+
+});

@@ -23,13 +23,11 @@ function NanoPAD2(host, mainTrackBank, log, config) {
 
     this.trackClipContents = [];
 
-    this.noteToClipLauncherGridMapping;
+    this.noteToClipLauncherGridMapping = {};
 
     this.mode = this.CLIP_MODE;
 
-    this.noteToClipLauncherGridMapping = this.initGrid();
-
-    this.initTrackPlayStates();
+    this.initGrid();
 }
 
 // defaut mode, the top row of scene 1 on the nano starts and stops clips
@@ -49,6 +47,10 @@ NanoPAD2.prototype.playstateForTrack = function(trackIndex) {
     return this.trackPlayStates[trackIndex];
 }
 
+NanoPAD2.prototype.trackClipHasContent = function(row, column) {
+    return this.trackClipContents[row][column];
+}
+
 NanoPAD2.prototype.playbackStateObserver = function(rowIndex, slotIndex, playbackState, isQueued) {
     // 0=stopped, 1=playing, 2=recording
     if (isQueued && (playbackState == 0)) {
@@ -60,31 +62,43 @@ NanoPAD2.prototype.playbackStateObserver = function(rowIndex, slotIndex, playbac
     }
 }
 
-NanoPAD2.prototype.initTrackPlayStates = function() {
-    for (var i = 0; i < this.config.NUM_TRACKS; i++) {
-        this.trackPlayStates[i] = -1;
-        
-        var track = this.mainTrackBank.getChannel(i);
-        var clipLauncherSlots = track.getClipLauncherSlots();
-        clipLauncherSlots.setIndication(true);
+NanoPAD2.prototype.hasContentObserver = function(rowIndex, slotIndex, hasClip) {
+    log("setting clip content for row, column "
+        + rowIndex + ", " + slotIndex
+        + " from " + this.trackClipContents[rowIndex][slotIndex] + " to " + hasClip);
+    this.trackClipContents[rowIndex][slotIndex] = hasClip;
+}
 
-        clipLauncherSlots.addPlaybackStateObserver(
-            this.getTrackSlotObserverFunc(
-                i, this
-            )
-        );
-    }
+NanoPAD2.prototype.initTrackPlayState = function(i) {
+    
+    this.trackPlayStates[i] = -1;
+    
+    var track = this.mainTrackBank.getChannel(i);
+    var clipLauncherSlots = track.getClipLauncherSlots();
+    clipLauncherSlots.setIndication(true);
+
+    clipLauncherSlots.addPlaybackStateObserver(
+        this.getTrackClipPlaybackObserverFunc(i, this)
+    );
+
+    clipLauncherSlots.addHasContentObserver(
+        this.getTrackClipHasContentObserverFunc(i, this)
+    );
+    
 }
 
 NanoPAD2.prototype.initGrid = function() {
-    var noteToClipLauncherGridMapping = {};
-    
+        
     // top left pad of scene 1 of the nanopad by default sends note on for note number 37 (c#)
     var startNote = 37;
     var increment = 16;
     
     var i = 0;
-    while (i < 8) {
+    while (i < this.config.NUM_TRACKS) {
+
+        this.initTrackPlayState(i);
+        this.trackClipContents[i] = [];
+
         if (i > 1) {
             startNote += increment;     
         }
@@ -95,16 +109,17 @@ NanoPAD2.prototype.initGrid = function() {
         this.log(colEven + ", " + colOdd);
 
         // now set the cols
-        for (var j = 0; j < 8; j++) {
-            noteToClipLauncherGridMapping[colOdd] = { r: i, c: j };
-            noteToClipLauncherGridMapping[colEven] = { r: i+1, c: j };
+        for (var j = 0; j < this.config.NUM_SCENES_PER_TRACK; j++) {
+            this.trackClipContents[i][j] = false;
+
+            this.noteToClipLauncherGridMapping[colOdd] = { r: i, c: j };
+            this.noteToClipLauncherGridMapping[colEven] = { r: i+1, c: j };
             colOdd+=2;
             colEven+=2;
         }
 
         i+=2;
     }
-    return noteToClipLauncherGridMapping;
 }
 
 NanoPAD2.prototype.isClipMode = function() {
@@ -137,8 +152,14 @@ NanoPAD2.prototype.getControllerMode = function(isChannelController, data1, data
     return mode;
 }
 
-NanoPAD2.prototype.getTrackSlotObserverFunc = function(index, nano) {
+NanoPAD2.prototype.getTrackClipPlaybackObserverFunc = function(index, nanoPad2) {
     return function(slotIndex, playbackState, isQueued) {
-        nano.playbackStateObserver(index, slotIndex, playbackState, isQueued);
+        nanoPad2.playbackStateObserver(index, slotIndex, playbackState, isQueued);
     };
+}
+
+NanoPAD2.prototype.getTrackClipHasContentObserverFunc = function(index, nanoPad2) {
+    return function(slotIndex, hasClip) {
+        nanoPad2.hasContentObserver(index, slotIndex, hasClip);
+    }
 }
