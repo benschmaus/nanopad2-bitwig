@@ -10,6 +10,8 @@ More at README.
 
 loadAPI(1);
 
+load("NanoPAD2.object.js");
+
 host.defineController(
     "Factotumo", "nanoPAD2 Clip Launcher",
     "1.0", "ae945665-8dd6-4615-8294-fc06e4a02c0b"
@@ -20,14 +22,21 @@ host.defineMidiPorts(1,0);
 // set to 1 to enable console logging
 var enableDebugLogging = 1;
 
-var mainTrackBank;
+var nanoPAD2;
 
-var NUM_TRACKS = 8;
-var NUM_SCENES_PER_TRACK = 8;
+var config = new Config();
 
-var trackPlayStates = [];
+/*
 
-var noteToClipLauncherGridMapping;
+TODO: for stop scene - add addHasContentObserver on each track's
+clipLauncherSlots to track which clips have content.  Only call stop
+on a track in scene mode if the track has a clip.
+
+TODO: might need to do some work to support clip recording (new state in trackPlayStates?)
+
+TODO: What when clips are pre-queued?  script might not get the states right in that case.
+
+*/
 
 function init() {
 
@@ -42,97 +51,73 @@ function init() {
     //noteInput.setShouldConsumeEvents(false);  
 
     // we support 8 tracks with 8 scenes
-    mainTrackBank = host.createMainTrackBank(NUM_TRACKS, 0, NUM_SCENES_PER_TRACK);
+    mainTrackBank = host.createMainTrackBank(config.NUM_TRACKS, 0, config.NUM_SCENES_PER_TRACK);
 
-    noteToClipLauncherGridMapping = getNoteToClipLauncherGridMapping(); 
-
-    for (var i = 0; i < NUM_TRACKS; i++) {
-        trackPlayStates[i] = -1;
-        var track = mainTrackBank.getChannel(i);
-        var clipLauncherSlots = track.getClipLauncherSlots();
-        clipLauncherSlots.setIndication(true);
-        
-        clipLauncherSlots.addPlaybackStateObserver(
-            getTrackSlotObserverFunc(
-                i,
-                function(rowIndex, slotIndex, playbackState, isQueued) {
-                    // 0=stopped, 1=playing, 2=recording
-                    if (isQueued && (playbackState == 0)) {
-                        log("stop queued, setting track playback state to -1 (stopped) for track " + rowIndex + ", slot=" + slotIndex);
-                        trackPlayStates[rowIndex] = -1;
-                    } else if (isQueued && (playbackState == 1)) {
-                        log("play queued, setting track playback state to playing for track " + rowIndex + ", slot=" + slotIndex);
-                        trackPlayStates[rowIndex] = slotIndex;
-                    }
-                }
-            )
-        );
-
-    }
+    nanoPAD2 = new NanoPAD2(host, mainTrackBank, log, config);
 
     log("init done.");
 }
 
 function onMidi(status, data1, data2) {
     log("onMidi(status=" + status + ", data1=" + data1 + ", data2=" + data2 + ")");
+    
+    nanoPAD2.updateMode(status, data1, data2);
 
     // we use note on messages from the nanoPAD2 to control clip launching
     if (status == 0x90) {
-        var noteMapping = noteToClipLauncherGridMapping[data1];
-        log("handling note on for note number " + data1 + " grid location: row=" + noteMapping.r + ", col=" + noteMapping.c);
-        if (trackPlayStates[noteMapping.r] == -1) {
+        var noteMapping = nanoPAD2.gridLocationForNote(data1);
+        log("handling note on for note number " + data1 + " grid location: row="
+            + noteMapping.r + ", col=" + noteMapping.c);
+        
+        var trackClip = nanoPAD2.playstateForTrack(noteMapping.r);
+        if (trackClip == -1) {
             log("launching clip on track " + noteMapping.r + ", clip " + noteMapping.c);
-            mainTrackBank.getChannel(noteMapping.r).getClipLauncherSlots().launch(noteMapping.c);
+            handlePlay(noteMapping.r, noteMapping.c);
         } else {
             // this track is already playing a clip.  stop playing if the pad pressed matches
             // the playing clip otherwise launch a new clip on the track.
-            if (trackPlayStates[noteMapping.r] == noteMapping.c) {
+            if (trackClip == noteMapping.c) {
                 log("stopping track " + noteMapping.r + ", clip " + noteMapping.c);
-                mainTrackBank.getChannel(noteMapping.r).getClipLauncherSlots().stop();
+                handleStop(noteMapping.r, noteMapping.c);
             } else {
-                log("track " + noteMapping.r + " already playing clip " + trackPlayStates[noteMapping.r] + ", launching new clip " + noteMapping.c);
-                mainTrackBank.getChannel(noteMapping.r).getClipLauncherSlots().launch(noteMapping.c);
+                log("track " + noteMapping.r + " already playing clip " + trackClip
+                    + ", launching new clip " + noteMapping.c);
+                handlePlay(noteMapping.r, noteMapping.c);
             }
-            
         }
     }
 }
 
-function getNoteToClipLauncherGridMapping() {
-    var noteToClipLauncherGridMapping = {};
-    
-    // top left pad of scene 1 of the nanopad by default sends note on for note number 37 (c#)
-    var startNote = 37;
-    var increment = 16;
-    
-    var i = 0;
-    while (i < 8) {
-        if (i > 1) {
-            startNote += increment;     
+
+function handlePlay(row, column) {
+    if (nanoPAD2.isClipMode()) {
+        mainTrackBank.getChannel(row).getClipLauncherSlots().launch(column);
+    } else {
+        // in scene mode the 1st row (top row in scene 1 on nano) controls scenes in Bitwig
+        if (row == 0) {
+            log("in scene mode and row 0, launching scene " + column);
+            mainTrackBank.launchScene(column);
+        } else {
+            mainTrackBank.getChannel(row).getClipLauncherSlots().launch(column);
         }
-        var evenRowStart = startNote-1;
-
-        var colOdd = startNote;
-        var colEven = evenRowStart;
-        log(colEven + ", " + colOdd);
-
-        // now set the cols
-        for (var j = 0; j < 8; j++) {
-            noteToClipLauncherGridMapping[colOdd] = { r: i, c: j };
-            noteToClipLauncherGridMapping[colEven] = { r: i+1, c: j };
-            colOdd+=2;
-            colEven+=2;
-        }
-
-        i+=2;
     }
-    return noteToClipLauncherGridMapping;
 }
 
-function getTrackSlotObserverFunc(index, f) {
-    return function(slotIndex, playbackState, isQueued) {
-        f(index, slotIndex, playbackState, isQueued);
-    };
+function handleStop(row, column) {
+    if (nanoPAD2.isClipMode()) {
+        mainTrackBank.getChannel(row).getClipLauncherSlots().stop();
+    } else {
+        // in scene mode the 1st row (top row in scene 1 on nano) controls scenes in Bitwig
+        if (row == 0) {
+            log("in scene mode and row 0, stopping all clips in scene " + column);
+            // in scene mode for a stop we need to stop playback on all channels
+            for (var i = 0; i < config.NUM_TRACKS; i++) {
+                mainTrackBank.getChannel(i).getClipLauncherSlots().stop();
+            }
+        } else {
+            mainTrackBank.getChannel(row).getClipLauncherSlots().stop();
+        }
+    }   
 }
 
 function onSysex(data) {
