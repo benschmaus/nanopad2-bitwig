@@ -24,18 +24,6 @@ var enableDebugLogging = 1;
 
 var nanoPAD2;
 
-/*
-
-TODO: for stop scene - add addHasContentObserver on each track's
-clipLauncherSlots to track which clips have content.  Only call stop
-on a track in scene mode if the track has a clip.
-
-TODO: might need to do some work to support clip recording (new state in trackPlayStates?)
-
-TODO: What when clips are pre-queued?  script might not get the states right in that case.
-
-*/
-
 function init() {
 
     var firstIn = host.getMidiInPort(0);
