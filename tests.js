@@ -78,16 +78,11 @@ QUnit.test(
     // check clip content setting
     assert.equal(nanoPAD2.trackClipContents.length == nanoPAD2.config.NUM_TRACKS, true,
         "track clips content has " + nanoPAD2.config.NUM_TRACKS + " tracks");
-    for (var i = 0; i < nanoPAD2.config.NUM_TRACKS; i++) {
-        assert.equal(nanoPAD2.trackClipContents[i].length == nanoPAD2.config.NUM_SCENES_PER_TRACK,
-        true,
-        "track clips content for track " + i  + " has " + nanoPAD2.config.NUM_SCENES_PER_TRACK + " clips");     
-    }
 
-    assert.equal(false == nanoPAD2.trackClipHasContent(0, 2), true, "track clip content default is false");
+    assert.equal(nanoPAD2.trackClipHasContent(0, 2), false, "track clip content default is false");
     
     nanoPAD2.hasContentObserver(0, 2, true);
-    assert.equal(true == nanoPAD2.trackClipHasContent(0, 2), true, "track clip content updated to true");
+    assert.equal(nanoPAD2.trackClipHasContent(0, 2), true, "track clip content updated to true");
 
     nanoPAD2.trackPlayStates[0] = 7;
     nanoPAD2.handleTransportStopped(false);

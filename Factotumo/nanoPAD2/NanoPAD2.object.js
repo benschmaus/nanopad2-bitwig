@@ -59,7 +59,7 @@ NanoPAD2.prototype.playstateForTrack = function(trackIndex) {
 }
 
 NanoPAD2.prototype.trackClipHasContent = function(row, column) {    
-    return this.trackClipContents[row][column];
+    return this.trackClipContents[row][column] || false;
 }
 
 NanoPAD2.prototype.playbackStateObserver = function(rowIndex, slotIndex, playbackState, isQueued) {
@@ -85,7 +85,7 @@ NanoPAD2.prototype.handleTransportStopped = function(isPlaying) {
     this.isTransportPlaying = isPlaying;
     
     if (isPlaying == false) {
-        log("transport stop clicked, setting playstate to stopped for all tracks");
+        log("transport stopped, setting playstate to stopped for all tracks");
         // set playstate to -1 (stopped) for all tracks if the
         // transport is stopped
         for (var i = 0; i < this.config.NUM_TRACKS; i++) {
@@ -132,14 +132,15 @@ NanoPAD2.prototype.initGrid = function() {
 }
 
 NanoPAD2.prototype.doRows = function(i) {
-        this.addTrackObservers(i);
-        this.addTrackObservers(i+1);
-
         this.trackPlayStates[i] = -1;
         this.trackPlayStates[i+1] = -1;
 
         this.trackClipContents[i] = [];
         this.trackClipContents[i+1] = [];
+
+        this.addTrackObservers(i);
+        this.addTrackObservers(i+1);
+
 }
 
 NanoPAD2.prototype.doColumns = function(startNote, i) {
@@ -150,9 +151,6 @@ NanoPAD2.prototype.doColumns = function(startNote, i) {
 
         // now set the cols
         for (var j = 0; j < this.config.NUM_SCENES_PER_TRACK; j++) {
-            this.trackClipContents[i][j] = false;
-            this.trackClipContents[i+1][j] = false;
-
             this.noteToClipLauncherGridMapping[colOdd] = { r: i, c: j };
             this.noteToClipLauncherGridMapping[colEven] = { r: i+1, c: j };
             colOdd+=2;

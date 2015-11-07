@@ -24,6 +24,7 @@ var enableDebugLogging = 1;
 
 var nanoPAD2;
 
+// TODO: add support for log levels
 function init() {
 
     var firstIn = host.getMidiInPort(0);
