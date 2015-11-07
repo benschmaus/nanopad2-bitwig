@@ -19,10 +19,17 @@ var mockTrack = { // mock clipLauncherSlots
     }
 };
 
+var mockTransport = {
+    addIsPlayingObserver: function(f) { }
+}
+
 // test object
 var nanoPAD2 = new NanoPAD2(
-    { showPopupNotification: log },
-    { getChannel: function(i) { return mockTrack }},
+    {
+        showPopupNotification: log,
+        createTransport: function() { return mockTransport; }
+    },
+    { getChannel: function(i) { return mockTrack; }},
     log
 );
 
@@ -81,5 +88,9 @@ QUnit.test(
     
     nanoPAD2.hasContentObserver(0, 2, true);
     assert.equal(true == nanoPAD2.trackClipHasContent(0, 2), true, "track clip content updated to true");
+
+    nanoPAD2.trackPlayStates[0] = 7;
+    nanoPAD2.handleTransportStopped(false);
+    assert.equal(-1 == nanoPAD2.trackPlayStates[0], true, "track playstate stopped on transport stop");
 
 });
