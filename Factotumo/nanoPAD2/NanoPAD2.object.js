@@ -68,8 +68,8 @@ NanoPAD2.prototype.playbackStateObserver = function(rowIndex, slotIndex, playbac
     if (playbackState == 0) {
         log("setting track playback state to -1 (stopped) for track " + rowIndex + ", slot=" + slotIndex);
         this.trackPlayStates[rowIndex] = -1;
-    } else if (playbackState == 1) {
-        log("setting track playback state to playing for track " + rowIndex + ", slot=" + slotIndex);
+    } else if (playbackState >= 1) {
+        log("setting track playback state to playing/recording for track " + rowIndex + ", slot=" + slotIndex);
         this.trackPlayStates[rowIndex] = slotIndex;
     }
 }
