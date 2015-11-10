@@ -205,7 +205,14 @@ NanoPAD2.prototype.handleSceneSelect = function(sysex) {
     }
 
     if (this.selectedScene != -1) {
-        this.host.showPopupNotification("Nano Scene " + this.selectedScene);
+        var firstTrack = this.selectedScene;
+        var secondTrack = this.selectedScene+1;
+        if (this.selectedScene > 1) {            
+            secondTrack = this.selectedScene*2;
+            firstTrack = secondTrack-1;
+        }
+        var tracks = firstTrack + ", " + secondTrack;
+        this.host.showPopupNotification("Nano Scene " + this.selectedScene + " - Bitwig Tracks " + tracks);
     }
 }
 
