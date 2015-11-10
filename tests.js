@@ -62,6 +62,28 @@ QUnit.test(
     nanoPAD2.updateMode(true, 0x01, 0x13);
     assert.equal(nanoPAD2.isClipMode(), true, "no mode change for CC other than #2");
 
+    // check scene selection
+    nanoPAD2.handleSceneSelect(0xff);
+
+    assert.equal(nanoPAD2.selectedScene == -1, true, "selected scene should be default when no note to reference");
+    assert.equal(nanoPAD2.lastNotePlayed == -1, true, "last note should be default state");
+
+    nanoPAD2.updateLastNotePlayed(39);
+    nanoPAD2.handleSceneSelect(0xff);
+    assert.equal(nanoPAD2.selectedScene == 2, true, "scene set to 2");
+
+    nanoPAD2.updateLastNotePlayed(55);
+    nanoPAD2.handleSceneSelect(0xff);
+    assert.equal(nanoPAD2.selectedScene == 3, true, "scene set to 3");
+
+    nanoPAD2.updateLastNotePlayed(72);
+    nanoPAD2.handleSceneSelect(0xff);
+    assert.equal(nanoPAD2.selectedScene == 4, true, "scene set to 4");
+
+    nanoPAD2.updateLastNotePlayed(98);
+    nanoPAD2.handleSceneSelect(0xff);
+    assert.equal(nanoPAD2.selectedScene == 1, true, "scene set to 1");
+
     // check playstate setting
     assert.equal(nanoPAD2.trackPlayStates.length == nanoPAD2.config.NUM_TRACKS, true,
         "track playstates has " + nanoPAD2.config.NUM_TRACKS + " tracks");

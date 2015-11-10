@@ -54,6 +54,7 @@ function onMidi(status, data1, data2) {
 
     // we use note on messages from the nanoPAD2 to control clip launching
     if (status == 0x90) {
+        nanoPAD2.updateLastNotePlayed(data1);
         var noteMapping = nanoPAD2.gridLocationForNote(data1);
         log("handling note on for note number " + data1 + " grid location: row="
             + noteMapping.r + ", col=" + noteMapping.c);
@@ -116,6 +117,9 @@ function handleStop(row, column) {
 
 function onSysex(data) {
     log("data=" + data);
+    // only the scene select button appears to generate sysex messages
+    // so we use this to track the currently selected scene on the nano
+    nanoPAD2.handleSceneSelect(data);
 }
 
 function exit() {

@@ -26,12 +26,23 @@ function NanoPAD2(host, mainTrackBank, log, config) {
     // keeps track of which scenes have clips for each track
     this.trackClipContents = [];
 
+    // top left pad of scene 1 of the nanopad by default sends note on for note number 37 (c#)
+    this.startNote = 37;
+    this.increment = 16;
+
     // maps note on messages from the nanoPAD2 to the clip launcher grid
     // rows are tracks and columns are clips
     this.noteToClipLauncherGridMapping = {};
 
     // see CLIP_MODE and SCENE_MODE
     this.mode = this.CLIP_MODE;
+
+    // track which scene (1-4) is selected on the nanopad2
+    this.selectedScene = -1;
+
+    // keeps track of last note played on the nano, used to determine scene
+    // on the nano
+    this.lastNotePlayed = -1;
 
     this.isTransportPlaying = false;
     this.transport.addIsPlayingObserver(
@@ -111,12 +122,8 @@ NanoPAD2.prototype.addTrackObservers = function(i) {
     
 }
 
-NanoPAD2.prototype.initGrid = function() {
-        
-    // top left pad of scene 1 of the nanopad by default sends note on for note number 37 (c#)
-    var startNote = 37;
-    var increment = 16;
-    
+NanoPAD2.prototype.initGrid = function() {    
+    var startNote = this.startNote;
     // we do 2 rows at a time to mirror the nanoPAD2 layout of 2 rows
     // of 8 pads spread over 4 scenes for 8 rows * 8 pads total
     for (var i = 0; i < this.config.NUM_TRACKS; i+=2) {
@@ -124,7 +131,7 @@ NanoPAD2.prototype.initGrid = function() {
         this.doRows(i);
 
         if (i > 1) {
-            startNote += increment;     
+            startNote += this.increment;     
         }
         
         this.doColumns(startNote, i);
@@ -165,6 +172,41 @@ NanoPAD2.prototype.isClipMode = function() {
 NanoPAD2.prototype.updateMode = function(isChannelController, data1, data2) {
     this.mode = this.getControllerMode(isChannelController, data1, data2);
 
+}
+
+NanoPAD2.prototype.updateLastNotePlayed = function(noteNumber) {
+    this.lastNotePlayed = noteNumber;
+}
+
+NanoPAD2.prototype.handleSceneSelect = function(sysex) {
+    log("last note played=" + this.lastNotePlayed);
+
+    // can't find the nano scene unless we know the last note played
+    // when we do then we know we're moving to the next highest scene
+    // at which point we can just increment the scene on each sysex message
+    if ((this.lastNotePlayed != -1) && (this.selectedScene == -1)) {
+        var notesInScene = 16;
+        // the 1st two pads are already accounted for so don't add them
+        // to the range
+        var noteRange = this.startNote + notesInScene-2;
+        for (var i = 0; i < 4; i++) {
+            log("start=" + this.startNote + ", noteRange="+noteRange);
+            if (this.lastNotePlayed < noteRange) {
+                this.selectedScene = ((i+2) % 4) || 4;
+                break;
+            }
+            noteRange += notesInScene;
+        }
+    } else if ((this.lastNotePlayed != -1) && (this.selectedScene != -1)) {
+        log("scene is already set so just incrementing");
+        this.selectedScene = ((this.selectedScene + 1) % 4) || 4;
+    } else {
+        log("note not played on nano yet so can't locate current scene");
+    }
+
+    if (this.selectedScene != -1) {
+        this.host.showPopupNotification("Nano Scene " + this.selectedScene);
+    }
 }
 
 NanoPAD2.prototype.getControllerMode = function(isChannelController, data1, data2) {
