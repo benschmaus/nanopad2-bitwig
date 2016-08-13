@@ -20,7 +20,7 @@ host.defineController(
 host.defineMidiPorts(1,0);
 
 // set to 1 to enable console logging
-var enableDebugLogging = 1;
+var enableDebugLogging = 0;
 
 var nanoPAD2;
 
